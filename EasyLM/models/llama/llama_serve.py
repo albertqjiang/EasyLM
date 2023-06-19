@@ -384,8 +384,16 @@ def main(argv):
 
 if __name__ == "__main__":
     """
-    python -m EasyLM.models.llama.llama_serve --mesh_dim='1,1,-1' --load_llama_config='7b' \
+    python -m EasyLM.models.llama.llama_serve \
+        --mesh_dim='1,1,-1' \
+        --load_llama_config='7b' \
         --load_checkpoint='params::gs://n2formal-public-data-europe/albert/llama/jaxllama/7B/model.pth' \
-        --tokenizer.vocab_file='gs://n2formal-public-data-europe/albert/llama/tokenizer.model'
+        --tokenizer.vocab_file='gs://n2formal-public-data-europe/albert/llama/tokenizer.model' \
+        --dtype='bf16' \
+        --input_length=256 \
+        --seq_length=512 \
+        --lm_server.port=35009 \
+        --lm_server.batch_size=16 \
+        --lm_server.pre_compile='all'
     """
     mlxu.run(main)
