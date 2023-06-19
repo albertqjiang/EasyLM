@@ -11,10 +11,10 @@ If you are using the official LLaMA weights from Meta, the first step of is to
 convert the official LLaMA checkpoint to the EasyLM checkpoint format. To do so,
 use the following command:
 
-``` shell
-python -m EasyLM.models.llama.convert_torch_to_easylm.py \
+```shell
+python -m EasyLM.models.llama.convert_torch_to_easylm \
     --checkpoint_dir='path/to/torch/llama/checkpoint' \
-    --output_dir='path/to/output/easylm/checkpoint' \
+    --output_file='path/to/output/easylm/checkpoint' \
     --streaming=True
 ```
 

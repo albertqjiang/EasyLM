@@ -9,7 +9,7 @@ import jax.numpy as jnp
 from jax.experimental.pjit import pjit
 from jax.sharding import PartitionSpec as PS
 import optax
-from transformers import GenerationConfig, FlaxLogitsProcessorList
+from transformers import GenerationConfig, FlaxLogitsProcessorList # type: ignore
 
 from EasyLM.checkpoint import StreamingCheckpointer
 from EasyLM.serving import LMServer
@@ -59,7 +59,7 @@ def main(argv):
         )
 
         hf_model = FlaxLLaMAForCausalLM(
-            llama_config,
+            llama_config, # type: ignore
             input_shape=(1, FLAGS.seq_length),
             seed=FLAGS.seed,
             _do_init=False
@@ -74,8 +74,8 @@ def main(argv):
 
     @partial(
         pjit,
-        in_shardings=(model_ps, PS(), PS()),
-        out_shardings=(PS(), PS(), PS())
+        in_shardings=(model_ps, PS(), PS()), # type: ignore
+        out_shardings=(PS(), PS(), PS()) # type: ignore
     )
     def forward_loglikelihood(params, rng, batch):
         batch = with_sharding_constraint(batch, PS(('dp', 'fsdp')))
@@ -87,13 +87,13 @@ def main(argv):
 
         logits = hf_model.module.apply(
             params, input_tokens, attention_mask=input_mask,
-            deterministic=True, rngs=rng_generator(llama_config.rng_keys()),
-        ).logits
+            deterministic=True, rngs=rng_generator(llama_config.rng_keys()), # type: ignore
+        ).logits # type: ignore
         # if llama_config.n_real_tokens is not None:
         #   logits = logits.at[:, :, llama_config.n_real_tokens:].set(-1e8)
         loglikelihood = -optax.softmax_cross_entropy_with_integer_labels(
             logits, output_tokens
-        )
+        ) # type: ignore
         loglikelihood = jnp.sum(loglikelihood * output_mask, axis=-1)
         match_count = jnp.sum(
             (jnp.argmax(logits, axis=-1) == output_tokens) * output_mask,
@@ -106,8 +106,8 @@ def main(argv):
 
     @partial(
         pjit,
-        in_shardings=(model_ps, PS(), PS(), PS()),
-        out_shardings=(PS(), PS())
+        in_shardings=(model_ps, PS(), PS(), PS()), # type: ignore
+        out_shardings=(PS(), PS()) # type: ignore
     )
     def forward_generate(params, rng, batch, temperature):
         batch = with_sharding_constraint(batch, PS(('dp', 'fsdp')))
@@ -116,7 +116,7 @@ def main(argv):
             batch['input_tokens'],
             attention_mask=batch['attention_mask'],
             params=params['params'],
-            prng_key=rng_generator(),
+            prng_key=rng_generator(), # type: ignore
             logits_processor=FlaxLogitsProcessorList(
                 [FlaxTemperatureLogitsWarper(temperature)]
             ),
@@ -135,8 +135,8 @@ def main(argv):
 
     @partial(
         pjit,
-        in_shardings=(model_ps, PS(), PS()),
-        out_shardings=(PS(), PS())
+        in_shardings=(model_ps, PS(), PS()), # type: ignore
+        out_shardings=(PS(), PS()) # type: ignore
     )
     def forward_greedy_generate(params, rng, batch):
         batch = with_sharding_constraint(batch, PS(('dp', 'fsdp')))
@@ -145,7 +145,7 @@ def main(argv):
             batch['input_tokens'],
             attention_mask=batch['attention_mask'],
             params=params['params'],
-            prng_key=rng_generator(),
+            prng_key=rng_generator(), # type: ignore
             generation_config=GenerationConfig(
                 max_new_tokens=FLAGS.seq_length - FLAGS.input_length,
                 pad_token_id=tokenizer.eos_token_id,
@@ -383,4 +383,9 @@ def main(argv):
 
 
 if __name__ == "__main__":
+    """
+    python -m EasyLM.models.llama.llama_serve --mesh_dim='1,1,-1' --load_llama_config='7b' \
+        --load_checkpoint='params::gs://n2formal-public-data-europe/albert/llama/jaxllama/7B/model.pth' \
+        --tokenizer.vocab_file='gs://n2formal-public-data-europe/albert/llama/tokenizer.model'
+    """
     mlxu.run(main)
