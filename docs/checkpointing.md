@@ -27,7 +27,7 @@ python -m EasyLM.models.llama.llama_serve \
 Note that the `params::` prefix is used to specify that the checkpoint is in
 streaming format. The following prefix are supported for loading checkpoint:
 * `params::`: Streaming checkpointing format.
-* `flax::`: Standard flax checkpointing format.
+* `flax_params::`: Standard flax checkpointing format.
 * `trainstate::`: Loading an entire train state with optimizer state, this
     option is only supported for training script.
 * `trainstate_params::`: Loading the params part from the entire train state.
