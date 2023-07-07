@@ -283,10 +283,11 @@ def global_norm(tree):
 
 
 def average_metrics(metrics):
-    return jax.tree_map(
-        lambda *args: jnp.mean(jnp.stack(args)),
-        *metrics
-    )
+    with jax.spmd_mode('allow_all'):
+        return jax.tree_map(
+            lambda *args: jnp.mean(jnp.stack(args)),
+            *metrics
+        )
 
 
 def get_float_dtype_by_name(dtype):
