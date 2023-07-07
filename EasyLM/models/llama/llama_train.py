@@ -46,12 +46,12 @@ FLAGS, FLAGS_DEF = mlxu.define_flags_with_default(
     llama=LLaMAConfig.get_default_config(),
     logger=mlxu.WandBLogger.get_default_config(),
     log_all_worker=False,
-    jax_distributed=JaxDistributedConfig.get_default_config(),
+    initialize_jax_distributed=JaxDistributedConfig.get_default_config(),
 )
 
 
 def main(argv):
-    JaxDistributedConfig.initialize(FLAGS.jax_distributed)
+    JaxDistributedConfig.initialize(FLAGS.initialize_jax_distributed)
     variant = mlxu.get_user_flags(FLAGS, FLAGS_DEF)
     flags_config_dict = mlxu.user_flags_to_config_dict(FLAGS, FLAGS_DEF)
     logger = mlxu.WandBLogger(
