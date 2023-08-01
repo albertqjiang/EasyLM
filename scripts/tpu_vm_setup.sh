@@ -16,6 +16,7 @@ sudo apt-get update && sudo apt-get install -y \
 cat > $HOME/tpu_requirements.txt <<- EndOfFile
 -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
 jax[tpu]==0.4.7
+orbax==0.1.6
 tensorflow==2.11.0
 flax==0.6.8
 optax==0.1.4
